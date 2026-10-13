@@ -1,0 +1,2375 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aarambh Lifecare</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <!-- =========================================================
+         ENHANCED ANIMATIONS & VFX LAYER
+         This block sits on top of style.css and only adds motion,
+         glow, glass and reveal effects. It will not fight with
+         your existing layout rules because it never sets
+         position/width/grid — only transforms, opacity, filters
+         and color-related effects.
+    ========================================================= -->
+    <style>
+        :root {
+            --glow-primary: #22d3ee;
+            --glow-secondary: #a855f7;
+            --glow-accent: #34d399;
+            --reveal-duration: 0.9s;
+            --reveal-ease: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            scroll-behavior: smooth;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ---------- custom scrollbar ---------- */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #0b1220; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--glow-primary), var(--glow-secondary));
+            border-radius: 10px;
+        }
+
+        /* ---------- loader ---------- */
+        #loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        #loader.loaded {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        #loader .spinner {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.08);
+            border-top-color: var(--glow-primary);
+            border-right-color: var(--glow-secondary);
+            animation: spin 0.9s linear infinite, pulseGlow 1.8s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulseGlow {
+            0%, 100% { filter: drop-shadow(0 0 6px var(--glow-primary)); }
+            50% { filter: drop-shadow(0 0 22px var(--glow-secondary)); }
+        }
+
+        /* ---------- cursor glow ---------- */
+        #cursor-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(34,211,238,0.10) 0%, rgba(168,85,247,0.06) 45%, transparent 70%);
+            mix-blend-mode: screen;
+            transition: opacity 0.4s ease;
+            opacity: 0;
+            will-change: transform;
+        }
+        #cursor-glow.active { opacity: 1; }
+
+        /* ---------- global floating particles ---------- */
+        .global-particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .global-particles span {
+            position: absolute;
+            bottom: -20px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--glow-primary), transparent 70%);
+            opacity: 0.6;
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) translateX(0) scale(0.6); opacity: 0; }
+            10% { opacity: 0.8; }
+            50% { transform: translateY(-50vh) translateX(20px) scale(1); }
+            100% { transform: translateY(-105vh) translateX(-10px) scale(0.4); opacity: 0; }
+        }
+
+        /* ---------- section-local particles ---------- */
+        .particles span {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.9), transparent 70%);
+            animation: floatUp linear infinite;
+        }
+
+        /* ---------- navbar ---------- */
+        .navbar {
+            transition: background 0.4s ease, box-shadow 0.4s ease, padding 0.4s ease, backdrop-filter 0.4s ease;
+        }
+        .navbar.scrolled {
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            backdrop-filter: blur(16px) saturate(140%);
+        }
+        .nav-links li a {
+            position: relative;
+        }
+        .nav-links li a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -4px;
+            width: 0%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--glow-primary), var(--glow-secondary));
+            transition: width 0.35s var(--reveal-ease);
+        }
+        .nav-links li a:hover::after { width: 100%; }
+
+        .nav-links.open {
+            animation: slideDown 0.4s var(--reveal-ease);
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---------- blobs & floating blobs ---------- */
+        .blob, .floating-blob {
+            animation: blobMorph 10s ease-in-out infinite, blobDrift 14s ease-in-out infinite;
+            will-change: transform, border-radius;
+        }
+        .blob2, .blob-orange { animation-duration: 12s, 16s; animation-delay: 0.6s; }
+        .blob3, .blob-blue { animation-duration: 9s, 18s; animation-delay: 1.2s; }
+        .blob-green { animation-duration: 11s, 15s; animation-delay: 0.3s; }
+        @keyframes blobMorph {
+            0%, 100% { border-radius: 42% 58% 65% 35% / 45% 45% 55% 55%; }
+            33% { border-radius: 58% 42% 35% 65% / 60% 40% 60% 40%; }
+            66% { border-radius: 50% 50% 40% 60% / 35% 65% 35% 65%; }
+        }
+        @keyframes blobDrift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+            50% { transform: translate(18px, -22px) rotate(12deg) scale(1.06); }
+        }
+
+        /* ---------- scroll reveal system ---------- */
+        .reveal-init {
+            opacity: 0;
+            transform: translateY(46px);
+            transition: opacity var(--reveal-duration) var(--reveal-ease),
+                        transform var(--reveal-duration) var(--reveal-ease),
+                        filter var(--reveal-duration) var(--reveal-ease);
+            filter: blur(6px);
+        }
+        .reveal-init.in-view {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+        .reveal-left { transform: translateX(-60px); }
+        .reveal-left.in-view { transform: translateX(0); }
+        .reveal-right { transform: translateX(60px); }
+        .reveal-right.in-view { transform: translateX(0); }
+        .reveal-scale { transform: scale(0.85); }
+        .reveal-scale.in-view { transform: scale(1); }
+
+        .stagger-child {
+            opacity: 0;
+            transform: translateY(34px);
+            transition: opacity 0.7s var(--reveal-ease), transform 0.7s var(--reveal-ease);
+        }
+        .stagger-child.in-view { opacity: 1; transform: translateY(0); }
+
+        /* ---------- hero ---------- */
+        .hero-content h1 span {
+            background: linear-gradient(90deg, var(--glow-primary), var(--glow-secondary), var(--glow-accent));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shine 5s linear infinite;
+        }
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+        .hero-image img {
+            animation: heroFloat 6s ease-in-out infinite;
+        }
+        @keyframes heroFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-16px) scale(1.015); }
+        }
+        .hero-content ul li {
+            position: relative;
+            padding-left: 4px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        .hero-content ul li:hover {
+            transform: translateX(8px);
+            color: var(--glow-primary);
+        }
+
+        /* ---------- magnetic / glow buttons ---------- */
+        .btn, .career-btn {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            transition: transform 0.3s var(--reveal-ease), box-shadow 0.3s ease;
+        }
+        .btn:hover, .career-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px -10px rgba(34,211,238,0.45);
+        }
+        .btn::before, .career-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+            transform: translateX(-120%);
+            transition: transform 0.7s ease;
+            z-index: -1;
+        }
+        .btn:hover::before, .career-btn:hover::before { transform: translateX(120%); }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.55);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out;
+            pointer-events: none;
+        }
+        @keyframes rippleAnim {
+            to { transform: scale(3); opacity: 0; }
+        }
+
+        /* ---------- tilt / glow cards ---------- */
+        .feature-card, .product-card, .cert-card, .segment-card, .process-step,
+        .partner-card, .team-card, .career-card, .csr-card, .blog-card, .glass-card {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            will-change: transform;
+        }
+        .feature-card:hover, .product-card:hover, .cert-card:hover, .segment-card:hover,
+        .process-step:hover, .partner-card:hover, .team-card:hover, .career-card:hover,
+        .csr-card:hover, .blog-card:hover, .glass-card:hover {
+            box-shadow: 0 20px 45px -20px rgba(34,211,238,0.35);
+        }
+        .feature-card::after, .product-card::after, .cert-card::after, .partner-card::after,
+        .team-card::after, .career-card::after, .csr-card::after, .blog-card::after, .glass-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(240px circle at var(--x, 50%) var(--y, 50%), rgba(34,211,238,0.18), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .feature-card:hover::after, .product-card:hover::after, .cert-card:hover::after,
+        .partner-card:hover::after, .team-card:hover::after, .career-card:hover::after,
+        .csr-card:hover::after, .blog-card:hover::after, .glass-card:hover::after {
+            opacity: 1;
+        }
+
+        .glass-card {
+            backdrop-filter: blur(14px) saturate(150%);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .segment-card {
+            transition: transform 0.3s var(--reveal-ease), background 0.3s ease;
+        }
+        .segment-card:hover {
+            transform: translateY(-8px) scale(1.04);
+        }
+
+        /* ---------- counters ---------- */
+        .counter-box { transition: transform 0.35s var(--reveal-ease); }
+        .counter-box:hover { transform: translateY(-6px); }
+        .counter {
+            display: inline-block;
+        }
+        .counter.counting {
+            animation: counterPop 0.4s ease;
+        }
+        @keyframes counterPop {
+            0% { transform: scale(0.9); }
+            60% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        /* ---------- accordion ---------- */
+        .accordion-header {
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .accordion-header span, .accordion-header i {
+            display: inline-block;
+            transition: transform 0.35s var(--reveal-ease);
+        }
+        .accordion-item.active .accordion-header span:last-child,
+        .accordion-item.active .accordion-header i {
+            transform: rotate(135deg);
+            color: var(--glow-primary);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.5s var(--reveal-ease), opacity 0.4s ease, padding 0.4s ease;
+        }
+        .accordion-item.active .accordion-content {
+            max-height: 400px;
+            opacity: 1;
+        }
+
+        /* ---------- tabs ---------- */
+        .tab-btn { position: relative; transition: color 0.3s ease; }
+        .tab-btn.active { color: var(--glow-primary); }
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -6px;
+            width: 0;
+            height: 2px;
+            background: var(--glow-primary);
+            transition: width 0.35s var(--reveal-ease), left 0.35s var(--reveal-ease);
+        }
+        .tab-btn.active::after { width: 80%; left: 10%; }
+        .tab-content {
+            display: none;
+            animation: fadeInUp 0.5s var(--reveal-ease);
+        }
+        .tab-content.active { display: block; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---------- brand marquee ---------- */
+        .brand-slider { overflow: hidden; }
+        .brand-track {
+            display: flex;
+            gap: 3rem;
+            width: max-content;
+            animation: marquee 16s linear infinite;
+        }
+        .brand-slider:hover .brand-track { animation-play-state: paused; }
+        @keyframes marquee {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        .brand {
+            transition: transform 0.3s ease, color 0.3s ease;
+            opacity: 0.75;
+        }
+        .brand:hover {
+            transform: scale(1.15);
+            opacity: 1;
+            color: var(--glow-primary);
+        }
+
+        /* ---------- testimonials ---------- */
+        .testimonial-slider { position: relative; min-height: 140px; }
+        .testimonial {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: opacity 0.6s var(--reveal-ease), transform 0.6s var(--reveal-ease);
+            pointer-events: none;
+        }
+        .testimonial.active {
+            opacity: 1;
+            transform: translateX(0);
+            position: relative;
+            pointer-events: auto;
+        }
+
+        /* ---------- timeline ---------- */
+        .timeline-item { opacity: 0; transition: opacity 0.8s var(--reveal-ease), transform 0.8s var(--reveal-ease); }
+        .timeline-item.left { transform: translateX(-70px); }
+        .timeline-item.right { transform: translateX(70px); }
+        .timeline-item.in-view { opacity: 1; transform: translateX(0); }
+        .timeline-content {
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .timeline-content:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 34px -18px rgba(34,211,238,0.4);
+        }
+
+        /* ---------- R&D orbit visual ---------- */
+        .science-circle {
+            animation: pulseGlow 2.4s ease-in-out infinite;
+        }
+        .orbit {
+            border: 1px dashed rgba(34,211,238,0.35);
+            border-radius: 50%;
+            position: absolute;
+            animation: spin linear infinite;
+        }
+        .orbit1 { animation-duration: 8s; }
+        .orbit2 { animation-duration: 14s; animation-direction: reverse; }
+        .orbit3 { animation-duration: 20s; }
+
+        .rnd-stat h4 {
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+        .rnd-stat:hover h4 {
+            color: var(--glow-primary);
+            transform: scale(1.08);
+        }
+
+        /* ---------- read-more links ---------- */
+        .read-more i {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        .read-more:hover i { transform: translateX(6px); }
+
+        /* ---------- whatsapp float ---------- */
+        .whatsapp {
+            animation: floatBounce 2.6s ease-in-out infinite;
+        }
+        @keyframes floatBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* ---------- form focus states ---------- */
+        .contact-form input, .contact-form textarea {
+            transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+        }
+        .contact-form input:focus, .contact-form textarea:focus {
+            outline: none;
+            border-color: var(--glow-primary);
+            box-shadow: 0 0 0 4px rgba(34,211,238,0.15);
+            transform: translateY(-2px);
+        }
+
+        /* ---------- footer ---------- */
+        footer .footer-grid h3 {
+            position: relative;
+        }
+        footer .footer-grid h3::after {
+            content: '';
+            display: block;
+            width: 36px;
+            height: 2px;
+            margin-top: 6px;
+            background: linear-gradient(90deg, var(--glow-primary), var(--glow-secondary));
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- BRAND / LOGO — moved here from <head>. This is the only
+         structural move on this page: it now renders as a normal,
+         in-flow, centered band at the top of the page instead of
+         floating over the hero on mobile. -->
+    <div class="logo-container">
+        <h1 class="brand-title">
+            <span>𝓐𝓪𝓻𝓪𝓶𝓫𝓱 𝓛𝓲𝓯𝓮𝓬𝓪𝓻𝓮</span>
+        </h1>
+    </div>
+
+    <div id="cursor-glow"></div>
+
+    <div class="global-particles">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- NAVBAR -->
+
+    {% comment %} <nav class="navbar">
+
+        <div class="logo">
+            Aarambh Pharma
+        </div>
+
+        <div class="menu-btn">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#" data-scroll-target=".services">Services</a></li>
+            <li><a href="#" data-scroll-target=".products">Products</a></li>
+            <li><a href="#" data-scroll-target=".contact">Contact</a></li>
+        </ul>
+
+    </nav> {% endcomment %}
+
+    <!-- HERO SECTION -->
+
+    <section class="hero">
+        <div class="hero-image">
+            <img src="{% static 'images/hero.webp' %}" alt="Hero">
+        </div>
+        <div class="hero-content">
+
+            <span class="tagline">
+                Leading Pharmaceutical Company
+            </span>
+
+            <h1>
+                Improving Healthcare
+                <span>Healing Lives</span>
+            </h1>
+
+            <p class="hero-description">
+                Your trusted pharmaceutical partner
+                for manufacturing, exporting and
+                delivering quality medicines worldwide.
+            </p>
+
+            <ul>
+                <li>Third Party Manufacturer</li>
+                <li>Quality Medicine Supplier</li>
+                <li>Leading Pharmaceutical Exporter</li>
+            </ul>
+
+            <button class="btn">Know More</button>
+
+        </div>
+
+
+        <div class="blob blob1"></div>
+        <div class="blob blob2"></div>
+        <div class="blob blob3"></div>
+
+        <div class="hero-shape"></div>
+
+        <div class="particles">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+    </section>
+
+    <!-- FEATURES -->
+
+    <section class="features reveal-init">
+
+        <div class="feature-card stagger-child">
+
+            <i class="fas fa-award"></i>
+
+            <h3>High-End Quality</h3>
+
+            <p>Best Quality Standards</p>
+
+        </div>
+
+        <div class="feature-card stagger-child">
+
+            <i class="fas fa-hand-holding-dollar"></i>
+
+            <h3>Affordability</h3>
+
+            <p>Affordable Medication</p>
+
+        </div>
+
+        <div class="feature-card stagger-child">
+
+            <i class="fas fa-truck"></i>
+
+            <h3>Availability</h3>
+
+            <p>On-Time Supply</p>
+
+        </div>
+
+        <div class="feature-card stagger-child">
+
+            <i class="fas fa-headset"></i>
+
+            <h3>24/7 Support</h3>
+
+            <p>End To End Assistance</p>
+
+        </div>
+
+    </section>
+
+    <!-- ABOUT -->
+
+    <section class="about reveal-init" id="about">
+
+        {% comment %} <div class="about-image reveal-left">
+
+            <img src="{% static 'images/logo.png' %}"
+                 alt="Aarambh Lifecare Logo"
+                 class="about-logo">
+
+        </div> {% endcomment %}
+
+        <div class="about-content reveal-right">
+
+            <span class="section-tag">
+                WELCOME TO AARAMBH LIFECARE
+            </span>
+
+            <h2>
+                Aarambh Lifecare
+            </h2>
+
+            <div class="contact-card">
+
+                <div class="contact-item">
+                    <span class="icon">👤</span>
+                    <span>Aarambh Lifecare</span>
+                </div>
+
+                <div class="contact-item">
+                    <span class="icon">📞</span>
+                    <span>+91 8879260626</span>
+                </div>
+
+                <div class="contact-item">
+                    <span class="icon">✉</span>
+                    <span>aarambhlifecare@gmail.com</span>
+                </div>
+
+                <div class="contact-item">
+                    <span class="icon">📍</span>
+                    <span>
+                        Shop No. 21, Ground Floor,
+                        Building No. 07,
+                        Samruddhi Evergreens,
+                        Poddar CHS Ltd,
+                        Sape Village,
+                        Badlapur East,
+                        Maharashtra - 421503
+                    </span>
+                </div>
+
+            </div>
+
+            <p>
+                Aarambh Pharma is committed to providing
+                quality healthcare solutions across India.
+                Our focus is on innovation, reliability,
+                affordability and customer satisfaction.
+            </p>
+
+            <p>
+                Anti Cancer, Virology, Organ Transplant,
+                Nephrology, Diagnostic Products and many more.
+            </p>
+
+            <a href="#" class="btn">
+                Know More
+            </a>
+
+        </div>
+
+        <!-- The duplicate .mission-left / .mission-right block that was
+             sitting here has been removed — the real one below (its
+             own <section class="mission">) is the single source now. -->
+
+    </section>
+
+    <!-- MISSION -->
+
+    <section class="mission reveal-init">
+
+        <div class="mission-left reveal-left">
+
+            <span class="section-tag">
+                GROW WITH US
+            </span>
+
+            <h2>
+                What Is Our Mission & Vision?
+            </h2>
+
+            <p>
+                Deliver world-class medicines while maintaining
+                affordability and accessibility for everyone.
+            </p>
+
+        </div>
+
+        <div class="mission-right reveal-right">
+
+            <div class="accordion">
+
+                <div class="accordion-item">
+
+                    <div class="accordion-header">
+
+                        Our Mission
+
+                        <span>+</span>
+
+                    </div>
+
+                    <div class="accordion-content">
+
+                        To provide quality medicines and healthcare
+                        products at affordable prices.
+
+                    </div>
+
+                </div>
+
+                <div class="accordion-item">
+
+                    <div class="accordion-header">
+
+                        Our Promise
+
+                        <span>+</span>
+
+                    </div>
+
+                    <div class="accordion-content">
+
+                        Customer satisfaction, transparency
+                        and consistent quality.
+
+                    </div>
+
+                </div>
+
+                <div class="accordion-item">
+
+                    <div class="accordion-header">
+
+                        Our Vision
+
+                        <span>+</span>
+
+                    </div>
+
+                    <div class="accordion-content">
+
+                        To become a globally trusted pharmaceutical
+                        company delivering innovative healthcare solutions.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="counter-section reveal-init">
+
+        <div class="counter-box stagger-child">
+
+            <h2 class="counter" data-target="500">
+                0
+            </h2>
+
+            <p>
+                Products
+            </p>
+
+        </div>
+
+        <div class="counter-box stagger-child">
+
+            <h2 class="counter" data-target="100">
+                0
+            </h2>
+
+            <p>
+                Cities Covered
+            </p>
+
+        </div>
+
+        <div class="counter-box stagger-child">
+
+            <h2 class="counter" data-target="50">
+                0
+            </h2>
+
+            <p>
+                Experts
+            </p>
+
+        </div>
+
+        <div class="counter-box stagger-child">
+
+            <h2 class="counter" data-target="10000">
+                0
+            </h2>
+
+            <p>
+                Happy Customers
+            </p>
+
+        </div>
+
+    </section>
+
+    <!-- WHY US -->
+
+    <section class="why-us reveal-init">
+
+        {% comment %}
+        <div class="why-image reveal-left">
+            <div class="image-box">
+                <img src="{% static 'images/why-us.jpg' %}" alt="Why Us">
+            </div>
+        </div>
+        {% endcomment %}
+
+        <div class="why-content reveal-right">
+
+            <span class="section-tag">
+                OUR EXPERTISE
+            </span>
+
+            <h2>
+                Why Choose Us?
+            </h2>
+
+            <p>
+                Aarambh Pharma focuses on innovation,
+                quality control and timely delivery,
+                helping customers receive dependable
+                healthcare solutions.
+            </p>
+
+            <div class="why-list">
+
+                <div>
+                    ✔ Best Quality
+                </div>
+
+                <div>
+                    ✔ Professional Team
+                </div>
+
+                <div>
+                    ✔ Environment Friendly
+                </div>
+
+                <div>
+                    ✔ Affordable Medicines
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- PRODUCT CATEGORIES -->
+
+    <section class="products reveal-init">
+
+    <div class="section-heading">
+        <span class="section-tag">OUR PRODUCTS</span>
+        <h2>Product Categories</h2>
+    </div>
+
+    <div class="product-grid">
+
+        <!-- Men's Health -->
+        <div class="product-card stagger-child">
+
+            <div class="product-img">
+                <img src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=700&q=80"
+                    alt="Men's Health">
+            </div>
+
+            <h3>Men's Health</h3>
+
+            <p>
+                Premium healthcare solutions
+                for men's wellness.
+            </p>
+
+        </div>
+
+        <!-- Women's Health -->
+        <div class="product-card stagger-child">
+
+            <div class="product-img">
+                <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=700&q=80"
+                    alt="Women's Health">
+            </div>
+
+            <h3>Women's Health</h3>
+
+            <p>
+                Specialized medicines and
+                healthcare products.
+            </p>
+
+        </div>
+
+        <!-- OTC Products -->
+        <div class="product-card stagger-child">
+
+            <div class="product-img">
+                <img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=700&q=80"
+                    alt="OTC Products">
+            </div>
+
+            <h3>OTC Products</h3>
+
+            <p>
+                Trusted over-the-counter
+                healthcare solutions.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+    <!-- SERVICES -->
+
+<section class="services reveal-init">
+
+    <div class="section-heading">
+
+        <span class="section-tag">
+            ABOUT OUR SERVICES
+        </span>
+
+        <h2>
+            Top Pharmaceutical Manufacturer
+        </h2>
+
+    </div>
+
+    <div class="tabs">
+
+        <button class="tab-btn active" data-tab="tab1">
+            Contract Manufacturing
+        </button>
+
+        <button class="tab-btn" data-tab="tab2">
+            Third Party Manufacturing
+        </button>
+
+        <button class="tab-btn" data-tab="tab3">
+            Generic Medicines
+        </button>
+
+    </div>
+
+    <div class="tab-content active" id="tab1">
+        <p>
+            Comprehensive pharmaceutical manufacturing services with
+            quality assurance and regulatory compliance. We deliver
+            high-quality medicines through advanced production facilities
+            and strict quality control processes.
+        </p>
+    </div>
+
+    <div class="tab-content" id="tab2">
+        <p>
+            Reliable third-party pharma manufacturing solutions with
+            scalable production capabilities, private labeling, and
+            customized product development for healthcare brands.
+        </p>
+    </div>
+
+    <div class="tab-content" id="tab3">
+        <p>
+            Affordable and high-quality generic medicines across
+            multiple therapeutic categories, ensuring accessibility
+            and effectiveness for patients worldwide.
+        </p>
+    </div>
+
+</section>
+
+    <!-- EXPERT SUPPORT -->
+
+    <section class="support reveal-init">
+
+        <div class="support-box stagger-child">
+
+            <i class="fas fa-thumbs-up"></i>
+
+            <h3>
+                100% Quality Products
+            </h3>
+
+            <p>
+                Quality assured pharmaceutical products.
+            </p>
+
+        </div>
+
+        <div class="support-box stagger-child">
+
+            <i class="fas fa-headset"></i>
+
+            <h3>
+                End-to-End Support
+            </h3>
+
+            <p>
+                24/7 phone and email support.
+            </p>
+
+        </div>
+
+    </section>
+
+    <!-- CONTACT -->
+
+    <section class="contact reveal-init">
+
+        <div class="section-heading">
+
+            <span class="section-tag">
+                SEND ENQUIRY
+            </span>
+
+            <h2>
+                Our Experts At Your Service
+            </h2>
+
+        </div>
+
+        <form method="POST" class="contact-form">
+
+            {% csrf_token %}
+
+            <input
+            name="name"
+            type="text"
+            placeholder="Your Name"
+            required>
+
+            <input
+            name="email"
+            type="email"
+            placeholder="Email Address"
+            required>
+
+            <input
+            name="phone"
+            type="text"
+            placeholder="Phone Number"
+            required>
+
+            <textarea
+            name="message"
+            rows="6"
+            placeholder="Message"
+            required></textarea>
+
+            <button type="submit" class="btn">
+
+            Send Message
+
+            </button>
+
+        </form>
+    </section>
+
+    <!-- WHATSAPP BUTTON -->
+
+   <a href="https://wa.me/919321231993?text=Hi%2C%20I%27m%20interested%20in%20your%20products"
+   class="whatsapp"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="Chat on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+    <section class="brands reveal-init">
+
+        <h2>Our Brands</h2>
+
+        <div class="brand-slider">
+
+            <div class="brand-track">
+
+                <div class="brand">XHeal</div>
+
+                <div class="brand">Vildasmart</div>
+
+                <div class="brand">Rosufree</div>
+
+                <div class="brand">Aarvita</div>
+
+                <div class="brand">Healpro</div>
+
+                <div class="brand">XHeal</div>
+
+                <div class="brand">Vildasmart</div>
+
+                <div class="brand">Rosufree</div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="testimonials reveal-init">
+
+        <div class="section-heading">
+
+            <span class="section-tag">
+
+                TESTIMONIALS
+
+            </span>
+
+            <h2>
+
+                What Clients Say
+
+            </h2>
+
+        </div>
+
+        <div class="testimonial-slider">
+
+            <div class="testimonial active">
+
+                <p>
+
+                    Excellent pharmaceutical partner.
+                    Timely delivery and premium quality.
+
+                </p>
+
+                <h4>
+
+                    Healthcare Distributor
+
+                </h4>
+
+            </div>
+
+            <div class="testimonial">
+
+                <p>
+
+                    Outstanding support and
+                    professional service.
+
+                </p>
+
+                <h4>
+
+                    Medical Supplier
+
+                </h4>
+
+            </div>
+
+            <div class="testimonial">
+
+                <p>
+
+                    Affordable medicines with
+                    consistent standards.
+
+                </p>
+
+                <h4>
+
+                    Retail Partner
+
+                </h4>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+    CERTIFICATIONS
+    ========================= -->
+
+    <section class="certifications reveal reveal-init">
+
+    <div class="floating-blob blob-green"></div>
+
+    <div class="section-heading">
+        <span class="section-tag">QUALITY ASSURANCE</span>
+        <h2>Our Certifications</h2>
+    </div>
+
+    <div class="cert-grid">
+<a href="{% static 'images/drugs-license.jpg' %}" target="_blank">
+    <div class="cert-card glass-card stagger-child">
+        <i class="fas fa-certificate"></i>
+        <h3>Drugs License</h3>
+        <p>Authorized pharmaceutical manufacturing and distribution license.</p>
+    </div>
+</a>
+
+<a href="{% static 'images/gst-certificate.jpg' %}" target="_blank">
+    <div class="cert-card glass-card stagger-child">
+        <i class="fas fa-file-invoice"></i>
+        <h3>GST Certificate</h3>
+        <p>Registered under Goods and Services Tax regulations.</p>
+    </div>
+</a>
+
+<a href="{% static 'images/fda-certificate.jpg' %}" target="_blank">
+    <div class="cert-card glass-card stagger-child">
+        <i class="fas fa-shield-alt"></i>
+        <h3>FDA Certification</h3>
+        <p>Compliant with pharmaceutical quality and safety standards.</p>
+    </div>
+</a>
+
+<a href="{% static 'images/import-export-certificate.jpg' %}" target="_blank">
+    <div class="cert-card glass-card stagger-child">
+        <i class="fas fa-globe"></i>
+        <h3>Import Export Certificate</h3>
+        <p>Certified for international pharmaceutical trade and exports.</p>
+    </div>
+</a>
+
+    </div>
+
+</section>
+
+    <section class="segments reveal reveal-init">
+
+        <div class="floating-blob blob-orange"></div>
+
+        <div class="section-heading">
+            <span class="section-tag">THERAPEUTIC SEGMENTS</span>
+            <h2>Our Expertise Areas</h2>
+        </div>
+
+        <div class="segment-grid">
+
+            <div class="segment-card stagger-child">❤️ Cardiac</div>
+            <div class="segment-card stagger-child">🩸 Diabetic</div>
+            <div class="segment-card stagger-child">🧴 Dermatology</div>
+            <div class="segment-card stagger-child">🩺 Nephrology</div>
+            <div class="segment-card stagger-child">🎗 Oncology</div>
+            <div class="segment-card stagger-child">🧠 Neurology</div>
+            <div class="segment-card stagger-child">🍽 Gastroenterology</div>
+            <div class="segment-card stagger-child">🚑 Critical Care</div>
+
+        </div>
+
+    </section>
+
+    <section class="exports reveal reveal-init">
+
+        <div class="floating-blob blob-blue"></div>
+
+        <div class="section-heading">
+            <span class="section-tag">GLOBAL PRESENCE</span>
+            <h2>Countries We Serve</h2>
+        </div>
+
+        <div class="country-grid">
+
+            <div class="stagger-child">🇮🇳 India</div>
+            <div class="stagger-child">🇳🇵 Nepal</div>
+            <div class="stagger-child">🇧🇩 Bangladesh</div>
+            <div class="stagger-child">🇱🇰 Sri Lanka</div>
+            <div class="stagger-child">🇦🇪 UAE</div>
+            <div class="stagger-child">🇰🇪 Kenya</div>
+            <div class="stagger-child">🇳🇬 Nigeria</div>
+            <div class="stagger-child">🇿🇦 South Africa</div>
+
+        </div>
+
+    </section>
+
+    <section class="process reveal reveal-init">
+
+        <div class="floating-blob blob-green"></div>
+
+        <div class="section-heading">
+            <span class="section-tag">OUR PROCESS</span>
+            <h2>Manufacturing Workflow</h2>
+        </div>
+
+        <div class="process-grid">
+
+            <div class="process-step glass-card stagger-child">
+                <div class="step-number">01</div>
+                <div class="step-icon">🔬</div>
+                <h3>Research</h3>
+                <p>Scientific market analysis and product planning.</p>
+            </div>
+
+            <div class="process-step glass-card stagger-child">
+                <div class="step-number">02</div>
+                <div class="step-icon">⚗️</div>
+                <h3>Formulation</h3>
+                <p>Advanced pharmaceutical formulation development.</p>
+            </div>
+
+            <div class="process-step glass-card stagger-child">
+                <div class="step-number">03</div>
+                <div class="step-icon">🏭</div>
+                <h3>Manufacturing</h3>
+                <p>WHO-GMP certified production facilities.</p>
+            </div>
+
+            <div class="process-step glass-card stagger-child">
+                <div class="step-number">04</div>
+                <div class="step-icon">🧪</div>
+                <h3>Testing</h3>
+                <p>Strict quality assurance and compliance testing.</p>
+            </div>
+
+            <div class="process-step glass-card stagger-child">
+                <div class="step-number">05</div>
+                <div class="step-icon">📦</div>
+                <h3>Packaging</h3>
+                <p>Secure and export-ready pharmaceutical packaging.</p>
+            </div>
+
+            <div class="process-step glass-card stagger-child">
+                <div class="step-number">06</div>
+                <div class="step-icon">🚚</div>
+                <h3>Distribution</h3>
+                <p>Fast and reliable nationwide delivery network.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="rnd reveal reveal-init">
+
+        <div class="floating-blob blob-blue"></div>
+
+        <div class="section-heading">
+            <span class="section-tag">INNOVATION</span>
+            <h2>Research & Development</h2>
+        </div>
+
+        <div class="rnd-container">
+
+            <div class="rnd-content reveal-left">
+
+                <h3>Driving Healthcare Innovation</h3>
+
+                <p>
+                    Our Research & Development division focuses on creating
+                    advanced pharmaceutical formulations, improving drug
+                    effectiveness, and delivering innovative healthcare
+                    solutions that meet international quality standards.
+                </p>
+
+                <div class="rnd-stats">
+
+                    <div class="rnd-stat">
+                        <h4>50+</h4>
+                        <span>Research Projects</span>
+                    </div>
+
+                    <div class="rnd-stat">
+                        <h4>100+</h4>
+                        <span>Product Formulations</span>
+                    </div>
+
+                    <div class="rnd-stat">
+                        <h4>24/7</h4>
+                        <span>Quality Monitoring</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="rnd-visual reveal-right">
+
+                <div class="science-circle">
+                    🧬
+                </div>
+
+                <div class="orbit orbit1"></div>
+                <div class="orbit orbit2"></div>
+                <div class="orbit orbit3"></div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="partners reveal reveal-init">
+
+        <div class="section-heading">
+            <span class="section-tag">PARTNERSHIP BENEFITS</span>
+            <h2>Why Partner With Aarambh Pharma?</h2>
+        </div>
+
+        <div class="partner-grid">
+
+            <div class="partner-card stagger-child">
+                <div class="partner-icon">🏭</div>
+                <h3>GMP Manufacturing</h3>
+                <p>WHO-GMP certified facilities ensuring international quality standards.</p>
+            </div>
+
+            <div class="partner-card stagger-child">
+                <div class="partner-icon">💰</div>
+                <h3>Competitive Pricing</h3>
+                <p>Cost-effective pharmaceutical manufacturing solutions.</p>
+            </div>
+
+            <div class="partner-card stagger-child">
+                <div class="partner-icon">🤝</div>
+                <h3>Dedicated Support</h3>
+                <p>Professional account managers and technical support team.</p>
+            </div>
+
+            <div class="partner-card stagger-child">
+                <div class="partner-icon">🚚</div>
+                <h3>Fast Delivery</h3>
+                <p>Efficient supply chain and nationwide logistics network.</p>
+            </div>
+
+            <div class="partner-card stagger-child">
+                <div class="partner-icon">🌍</div>
+                <h3>Export Expertise</h3>
+                <p>Strong international regulatory and export capabilities.</p>
+            </div>
+
+            <div class="partner-card stagger-child">
+                <div class="partner-icon">🛡️</div>
+                <h3>Quality Assurance</h3>
+                <p>Multi-level quality checks and compliance verification.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="timeline reveal reveal-init">
+
+        <div class="section-heading">
+            <span class="section-tag">OUR JOURNEY</span>
+            <h2>Company Timeline</h2>
+        </div>
+
+        <div class="timeline-wrapper">
+
+            <div class="timeline-item left">
+                <div class="timeline-content">
+                    <span class="year">2022</span>
+                    <h3>Company Established</h3>
+                    <p>Aarambh Pharma began its mission to deliver quality healthcare solutions.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item right">
+                <div class="timeline-content">
+                    <span class="year">2023</span>
+                    <h3>100+ Products Added</h3>
+                    <p>Expanded our portfolio across multiple therapeutic segments.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item left">
+                <div class="timeline-content">
+                    <span class="year">2024</span>
+                    <h3>PAN India Expansion</h3>
+                    <p>Established a strong nationwide distribution network.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item right">
+                <div class="timeline-content">
+                    <span class="year">2025</span>
+                    <h3>Export Operations Started</h3>
+                    <p>Successfully entered international pharmaceutical markets.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item left">
+                <div class="timeline-content">
+                    <span class="year">2026</span>
+                    <h3>Healthcare Innovation Division</h3>
+                    <p>Launched dedicated R&D and healthcare innovation initiatives.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+    LEADERSHIP TEAM
+    ========================= -->
+
+    <section class="leadership reveal reveal-init">
+
+        <div class="leadership-bg"></div>
+
+        <div class="section-heading">
+            <span class="section-tag">OUR LEADERSHIP</span>
+            <h2>Visionaries Behind Aarambh Pharma</h2>
+            <p>
+                Experienced leaders driving innovation,
+                quality and healthcare excellence globally.
+            </p>
+        </div>
+
+        <div class="team-grid">
+
+            <div class="team-card stagger-child">
+
+                <div class="team-glow"></div>
+
+                <div class="team-img">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+
+                <h3>Founder & CEO</h3>
+
+                <span>Strategic Leadership</span>
+
+                <p>
+                    Leading the company vision, growth strategy,
+                    partnerships and future healthcare innovations.
+                </p>
+
+                <div class="team-social">
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fas fa-envelope"></i></a>
+                </div>
+
+            </div>
+
+            <div class="team-card stagger-child">
+
+                <div class="team-glow"></div>
+
+                <div class="team-img">
+                    <i class="fas fa-user-cog"></i>
+                </div>
+
+                <h3>Operations Director</h3>
+
+                <span>Supply Chain Excellence</span>
+
+                <p>
+                    Ensuring seamless production,
+                    logistics management and timely delivery.
+                </p>
+
+                <div class="team-social">
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fas fa-envelope"></i></a>
+                </div>
+
+            </div>
+
+            <div class="team-card stagger-child">
+
+                <div class="team-glow"></div>
+
+                <div class="team-img">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+
+                <h3>Quality Director</h3>
+
+                <span>Regulatory Compliance</span>
+
+                <p>
+                    Monitoring international standards,
+                    product safety and quality assurance.
+                </p>
+
+                <div class="team-social">
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fas fa-envelope"></i></a>
+                </div>
+
+            </div>
+
+            <div class="team-card stagger-child">
+
+                <div class="team-glow"></div>
+
+                <div class="team-img">
+                    <i class="fas fa-flask"></i>
+                </div>
+
+                <h3>R&D Head</h3>
+
+                <span>Healthcare Innovation</span>
+
+                <p>
+                    Driving breakthrough research and
+                    developing next-generation formulations.
+                </p>
+
+                <div class="team-social">
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fas fa-envelope"></i></a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+    FAQ SECTION
+    ========================= -->
+
+    <section class="faq reveal reveal-init">
+
+        <div class="faq-bg"></div>
+
+        <div class="section-heading">
+            <span class="section-tag">HELP CENTER</span>
+            <h2>Frequently Asked Questions</h2>
+            <p>
+                Everything you need to know about
+                Aarambh Pharma services and operations.
+            </p>
+        </div>
+
+        <div class="faq-container">
+
+            <div class="accordion-item">
+
+                <div class="accordion-header">
+                    <span>
+                        Do you provide Third Party Manufacturing?
+                    </span>
+                    <i class="fas fa-plus"></i>
+                </div>
+
+                <div class="accordion-content">
+                    <p>
+                        Yes. Aarambh Pharma provides complete
+                        third-party manufacturing solutions with
+                        GMP-certified production facilities.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="accordion-item">
+
+                <div class="accordion-header">
+                    <span>
+                        Do you export pharmaceutical products?
+                    </span>
+                    <i class="fas fa-plus"></i>
+                </div>
+
+                <div class="accordion-content">
+                    <p>
+                        Yes. We export healthcare and pharmaceutical
+                        products to multiple international markets
+                        while maintaining global quality standards.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="accordion-item">
+
+                <div class="accordion-header">
+                    <span>
+                        Are your products GMP certified?
+                    </span>
+                    <i class="fas fa-plus"></i>
+                </div>
+
+                <div class="accordion-content">
+                    <p>
+                        All products are manufactured following
+                        WHO-GMP and strict quality control processes.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="accordion-item">
+
+                <div class="accordion-header">
+                    <span>
+                        Do you support custom product development?
+                    </span>
+                    <i class="fas fa-plus"></i>
+                </div>
+
+                <div class="accordion-content">
+                    <p>
+                        Yes. Our R&D team assists clients in creating
+                        customized pharmaceutical formulations.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="accordion-item">
+
+                <div class="accordion-header">
+                    <span>
+                        How can I become a distribution partner?
+                    </span>
+                    <i class="fas fa-plus"></i>
+                </div>
+
+                <div class="accordion-content">
+                    <p>
+                        Contact our business development team through
+                        the contact form for partnership opportunities.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+    BLOG SECTION
+    ========================= -->
+
+    <section class="blog reveal reveal-init">
+
+        <div class="blog-bg"></div>
+
+        <div class="section-heading">
+            <span class="section-tag">LATEST INSIGHTS</span>
+            <h2>Healthcare & Pharma Updates</h2>
+            <p>
+                Stay updated with the latest healthcare trends,
+                pharmaceutical innovations and industry developments.
+            </p>
+        </div>
+
+        <div class="blog-grid">
+
+            <div class="blog-card stagger-child">
+
+                <div class="blog-image">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+
+                <div class="blog-content">
+
+                    <span class="blog-date">
+                        15 July 2026
+                    </span>
+
+                    <h3>
+                        Future of Healthcare Innovation
+                    </h3>
+
+                    <p>
+                        Discover how advanced technologies are
+                        transforming patient care and treatment methods.
+                    </p>
+
+                    <a href="#" class="read-more">
+                        Read More
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="blog-card stagger-child">
+
+                <div class="blog-image">
+                    <i class="fas fa-flask"></i>
+                </div>
+
+                <div class="blog-content">
+
+                    <span class="blog-date">
+                        20 July 2026
+                    </span>
+
+                    <h3>
+                        Research Driven Growth
+                    </h3>
+
+                    <p>
+                        Understanding the importance of continuous
+                        innovation in pharmaceutical development.
+                    </p>
+
+                    <a href="#" class="read-more">
+                        Read More
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="blog-card stagger-child">
+
+                <div class="blog-image">
+                    <i class="fas fa-shield-virus"></i>
+                </div>
+
+                <div class="blog-content">
+
+                    <span class="blog-date">
+                        25 July 2026
+                    </span>
+
+                    <h3>
+                        Global Quality Standards
+                    </h3>
+
+                    <p>
+                        Learn how international compliance ensures
+                        safety and effectiveness in medicines.
+                    </p>
+
+                    <a href="#" class="read-more">
+                        Read More
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+    CSR SECTION
+    ========================= -->
+
+    <section class="csr reveal reveal-init">
+
+        <div class="csr-bg"></div>
+
+        <div class="section-heading">
+            <span class="section-tag">CSR INITIATIVES</span>
+            <h2>Creating Healthier Communities</h2>
+
+            <p>
+                Beyond business, Aarambh Pharma is committed
+                to improving lives through social responsibility,
+                healthcare awareness and community development.
+            </p>
+        </div>
+
+        <div class="csr-grid">
+
+            <div class="csr-card stagger-child">
+
+                <div class="csr-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+
+                <h3>Healthcare Camps</h3>
+
+                <p>
+                    Organizing free medical checkups and
+                    health awareness programs in rural areas.
+                </p>
+
+            </div>
+
+            <div class="csr-card stagger-child">
+
+                <div class="csr-icon">
+                    <i class="fas fa-hand-holding-heart"></i>
+                </div>
+
+                <h3>Blood Donation Drives</h3>
+
+                <p>
+                    Encouraging voluntary blood donations
+                    to support emergency healthcare services.
+                </p>
+
+            </div>
+
+            <div class="csr-card stagger-child">
+
+                <div class="csr-icon">
+                    <i class="fas fa-seedling"></i>
+                </div>
+
+                <h3>Green Initiatives</h3>
+
+                <p>
+                    Supporting environmental sustainability
+                    through plantation and eco-friendly practices.
+                </p>
+
+            </div>
+
+            <div class="csr-card stagger-child">
+
+                <div class="csr-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+
+                <h3>Community Welfare</h3>
+
+                <p>
+                    Partnering with local organizations
+                    to improve public health and education.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+    CAREERS SECTION
+    ========================= -->
+
+    <section class="careers reveal reveal-init">
+
+        <div class="careers-bg"></div>
+
+        <div class="section-heading">
+            <span class="section-tag">JOIN OUR TEAM</span>
+            <h2>Build Your Future With Aarambh Pharma</h2>
+
+            <p>
+                Join a dynamic team committed to innovation,
+                healthcare excellence and professional growth.
+                Together, we create solutions that improve lives.
+            </p>
+        </div>
+
+        <div class="career-wrapper">
+
+            <div class="career-card stagger-child">
+
+                <div class="career-icon">
+                    <i class="fas fa-briefcase-medical"></i>
+                </div>
+
+                <h3>Growth Opportunities</h3>
+
+                <p>
+                    Accelerate your career with continuous
+                    learning, leadership development and
+                    industry exposure.
+                </p>
+
+            </div>
+
+            <div class="career-card stagger-child">
+
+                <div class="career-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+
+                <h3>Collaborative Culture</h3>
+
+                <p>
+                    Work alongside experienced professionals
+                    in a supportive and innovation-driven
+                    environment.
+                </p>
+
+            </div>
+
+            <div class="career-card stagger-child">
+
+                <div class="career-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+
+                <h3>Career Advancement</h3>
+
+                <p>
+                    Unlock new opportunities through
+                    performance-based growth and
+                    professional recognition.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="career-cta">
+
+            <h3>
+                Ready To Start Your Journey?
+            </h3>
+
+            <p>
+                Explore exciting opportunities and become
+                part of a fast-growing pharmaceutical company.
+            </p>
+
+            <a href="#" class="career-btn">
+                Apply Now
+                <i class="fas fa-arrow-right"></i>
+            </a>
+
+        </div>
+
+    </section>
+
+    <footer>
+
+    <div class="footer-blob"></div>
+
+    <div class="footer-container">
+
+        <div class="footer-grid">
+
+            <div class="footer-col footer-brand">
+
+                <h3>Aarambh Pharma</h3>
+
+                <p>
+                    Improving Healthcare,
+                    Healing Lives.
+                </p>
+
+                <div class="footer-social">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+
+            </div>
+
+            <div class="footer-col">
+
+                <h3>Services</h3>
+
+                <ul>
+                    <li><a href="#">Contract Manufacturing</a></li>
+                    <li><a href="#">Third Party Manufacturing</a></li>
+                    <li><a href="#">Quality Medicine Supplier</a></li>
+                </ul>
+
+            </div>
+
+            <div class="footer-col">
+
+                <h3>Quick Links</h3>
+
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#">Products</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+
+            </div>
+
+            <div class="footer-col">
+
+                <h3>Contact</h3>
+
+                <p><i class="fas fa-envelope"></i> aarambhlifecare02@gmail.com</p>
+                <p><i class="fas fa-phone"></i> +91 9082349963</p>
+                <p><i class="fas fa-map-marker-alt"></i> Badlapur East, Maharashtra</p>
+
+            </div>
+
+        </div>
+
+        <div class="copyright">
+            © 2026 Aarambh Pharma. All Rights Reserved.
+        </div>
+
+    </div>
+
+</footer>
+
+    <!-- main.js removed: it duplicated everything the inline script
+         below already does (loader, reveal, counters, accordion,
+         tabs, testimonials, tilt, ripple, navbar shrink, particles),
+         and it crashed on load because .menu-btn / .nav-links don't
+         exist while the navbar above stays commented out — that
+         crash was silently killing the rest of main.js on every
+         page load. If you re-enable the navbar and want main.js
+         back as the single script, say so and I'll rewrite it with
+         null-guards and drop this inline block instead. -->
+
+    <!-- =========================================================
+         ANIMATIONS & INTERACTIVITY SCRIPT
+         loader, cursor glow, reveal-on-scroll, counters, accordion,
+         tabs, testimonial rotation, tilt/spotlight, ripple buttons,
+         mobile menu, navbar shrink, particle randomisation.
+    ========================================================= -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        /* ---------- loader ---------- */
+        var loader = document.getElementById('loader');
+        window.addEventListener('load', function () {
+            setTimeout(function () {
+                if (loader) loader.classList.add('loaded');
+            }, 300);
+        });
+
+        /* ---------- cursor glow ---------- */
+        var glow = document.getElementById('cursor-glow');
+        if (glow && window.matchMedia('(pointer: fine)').matches) {
+            document.addEventListener('mousemove', function (e) {
+                glow.style.transform = 'translate(' + e.clientX + 'px,' + e.clientY + 'px) translate(-50%,-50%)';
+                glow.classList.add('active');
+            });
+            document.addEventListener('mouseleave', function () {
+                glow.classList.remove('active');
+            });
+        }
+
+        /* ---------- randomise particles ---------- */
+        function randomiseParticles(selector, opts) {
+            var items = document.querySelectorAll(selector);
+            items.forEach(function (el) {
+                var left = Math.random() * 100;
+                var duration = (opts.minDur + Math.random() * (opts.maxDur - opts.minDur)).toFixed(2);
+                var delay = (Math.random() * opts.maxDelay).toFixed(2);
+                var size = (opts.minSize + Math.random() * (opts.maxSize - opts.minSize)).toFixed(1);
+                el.style.left = left + '%';
+                el.style.animationDuration = duration + 's';
+                el.style.animationDelay = delay + 's';
+                el.style.width = size + 'px';
+                el.style.height = size + 'px';
+            });
+        }
+        randomiseParticles('.global-particles span', { minDur: 10, maxDur: 22, maxDelay: 12, minSize: 3, maxSize: 7 });
+        randomiseParticles('.particles span', { minDur: 6, maxDur: 14, maxDelay: 8, minSize: 4, maxSize: 10 });
+
+        /* ---------- navbar shrink on scroll ---------- */
+        var navbar = document.querySelector('.navbar');
+        window.addEventListener('scroll', function () {
+            if (!navbar) return;
+            if (window.scrollY > 50) navbar.classList.add('scrolled');
+            else navbar.classList.remove('scrolled');
+        });
+
+        /* ---------- mobile menu toggle ---------- */
+        var menuBtn = document.querySelector('.menu-btn');
+        var navLinks = document.querySelector('.nav-links');
+        if (menuBtn && navLinks) {
+            menuBtn.addEventListener('click', function () {
+                navLinks.classList.toggle('open');
+            });
+            navLinks.querySelectorAll('a').forEach(function (a) {
+                a.addEventListener('click', function () {
+                    navLinks.classList.remove('open');
+                });
+            });
+        }
+
+        /* ---------- smooth scroll for in-page links ---------- */
+        document.querySelectorAll('a[href="#"]').forEach(function (a) {
+            var target = a.getAttribute('data-scroll-target');
+            if (!target) return;
+            a.addEventListener('click', function (e) {
+                var el = document.querySelector(target);
+                if (el) {
+                    e.preventDefault();
+                    el.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        /* ---------- scroll reveal (IntersectionObserver) ---------- */
+        var revealTargets = document.querySelectorAll('.reveal-init, .stagger-child, .timeline-item');
+        if ('IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        io.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+            revealTargets.forEach(function (el) { io.observe(el); });
+
+            /* stagger delay for children within the same parent */
+            document.querySelectorAll('.reveal-init').forEach(function (section) {
+                var children = section.querySelectorAll('.stagger-child');
+                children.forEach(function (child, i) {
+                    child.style.transitionDelay = (i * 0.12) + 's';
+                });
+            });
+        } else {
+            revealTargets.forEach(function (el) { el.classList.add('in-view'); });
+        }
+
+        /* ---------- counters ---------- */
+        var counters = document.querySelectorAll('.counter');
+        function animateCounter(el) {
+            var target = parseInt(el.getAttribute('data-target'), 10) || 0;
+            var duration = 1600;
+            var start = null;
+            function step(ts) {
+                if (!start) start = ts;
+                var progress = Math.min((ts - start) / duration, 1);
+                var eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.floor(eased * target).toLocaleString();
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    el.textContent = target.toLocaleString() + '+';
+                    el.classList.add('counting');
+                }
+            }
+            requestAnimationFrame(step);
+        }
+        if ('IntersectionObserver' in window && counters.length) {
+            var counterIO = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        animateCounter(entry.target);
+                        counterIO.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.6 });
+            counters.forEach(function (el) { counterIO.observe(el); });
+        }
+
+        /* ---------- accordion (mission + FAQ) ---------- */
+        document.querySelectorAll('.accordion-item').forEach(function (item) {
+            var header = item.querySelector('.accordion-header');
+            if (!header) return;
+            header.addEventListener('click', function () {
+                var parent = item.parentElement;
+                var wasActive = item.classList.contains('active');
+                parent.querySelectorAll('.accordion-item').forEach(function (i) {
+                    i.classList.remove('active');
+                });
+                if (!wasActive) item.classList.add('active');
+            });
+        });
+
+        /* ---------- services tabs ---------- */
+        var tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var target = btn.getAttribute('data-tab');
+                document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+                document.querySelectorAll('.tab-content').forEach(function (c) { c.classList.remove('active'); });
+                btn.classList.add('active');
+                var content = document.getElementById(target);
+                if (content) content.classList.add('active');
+            });
+        });
+
+        /* ---------- testimonial auto-rotate ---------- */
+        var testimonials = document.querySelectorAll('.testimonial');
+        if (testimonials.length) {
+            var tIndex = 0;
+            setInterval(function () {
+                testimonials[tIndex].classList.remove('active');
+                tIndex = (tIndex + 1) % testimonials.length;
+                testimonials[tIndex].classList.add('active');
+            }, 4200);
+        }
+
+        /* ---------- tilt / spotlight on cards ---------- */
+        var tiltSelector = '.feature-card, .product-card, .cert-card, .partner-card, .team-card, .career-card, .csr-card, .blog-card, .process-step';
+        document.querySelectorAll(tiltSelector).forEach(function (card) {
+            card.addEventListener('mousemove', function (e) {
+                var rect = card.getBoundingClientRect();
+                var x = e.clientX - rect.left;
+                var y = e.clientY - rect.top;
+                var cx = rect.width / 2;
+                var cy = rect.height / 2;
+                var rotateX = ((y - cy) / cy) * -6;
+                var rotateY = ((x - cx) / cx) * 6;
+                card.style.transform = 'perspective(700px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-4px)';
+                card.style.setProperty('--x', x + 'px');
+                card.style.setProperty('--y', y + 'px');
+            });
+            card.addEventListener('mouseleave', function () {
+                card.style.transform = 'perspective(700px) rotateX(0) rotateY(0) translateY(0)';
+            });
+        });
+
+        /* ---------- button ripple effect ---------- */
+        document.querySelectorAll('.btn, .career-btn').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                var rect = btn.getBoundingClientRect();
+                var ripple = document.createElement('span');
+                var size = Math.max(rect.width, rect.height);
+                ripple.className = 'ripple';
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                btn.appendChild(ripple);
+                setTimeout(function () { ripple.remove(); }, 650);
+            });
+        });
+
+    });
+    </script>
+
+</body>
+
+</html>
